@@ -4,11 +4,29 @@ const { StatusCodes } = require('http-status-codes');
 
 // Create a new location
 exports.createLocation = async (req, res) => {
+  // Debug: Log the received request body
+  console.log("Received body:", req.body);
+  console.log("Received user:", req.user);
   try {
     const { name, latitude, longitude, address, description } = req.body;
     
+    // Check for authentication/authorization
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized: User information missing from request.'
+      });
+    }
+    if (!req.user.isAdmin) {
+      console.log('User is not admin:', req.user);
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Only admins can create locations.'
+      });
+    }
+    
     // Basic validation
-    if (!name || !latitude || !longitude || !address) {
+    if (!name || latitude === undefined || latitude === null || longitude === undefined || longitude === null || !address) {
       return res.status(400).json({ 
         success: false, 
         message: 'Missing required fields. Please provide name, coordinates and address.' 

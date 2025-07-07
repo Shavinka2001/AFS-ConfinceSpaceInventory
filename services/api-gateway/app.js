@@ -4,9 +4,9 @@ const proxy = require("express-http-proxy");
 const { applyRateLimiter } = require("./utils/rateLimitter")
 const app = express();
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:3000','http://localhost:5000','http://localhost:8080'],
+  origin: ['http://localhost:5173', 'http://localhost:3000','http://localhost:5000','http://localhost:8080','http://4.236.138.4'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization',],
   credentials: true,
   optionsSuccessStatus: 200
 };
@@ -15,7 +15,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 //host.docker.internal
 // app.use("/api/users", applyRateLimiter, proxy("host.docker.internal:5001"));
-app.use("/api/users", applyRateLimiter, proxy("http://auth:5001", {
+app.use("/api/users", applyRateLimiter, proxy("http://localhost:5001", {
   proxyErrorHandler: function (err, res, next) {
     console.error('Proxy error for /api/users:', err.message);
     res.status(500).json({
@@ -28,7 +28,7 @@ app.use("/api/users", applyRateLimiter, proxy("http://auth:5001", {
 app.use("/api/auth", (req, res, next) => {
   console.log(`[API-GATEWAY] Received request for /api/auth: ${req.method} ${req.originalUrl}`);
   next();
-}, applyRateLimiter, proxy("http://auth:5001", {
+}, applyRateLimiter, proxy("http://localhost:5001", {
   userResDecorator: function(proxyRes, proxyResData, req, res) {
     console.log(`[API-GATEWAY] Response from Auth service for ${req.method} ${req.originalUrl}: Status ${proxyRes.statusCode}`);
     return proxyResData;
@@ -45,10 +45,18 @@ app.use("/api/auth", (req, res, next) => {
 app.use(
   "/api/order",
   applyRateLimiter,
-  proxy("http://confined-space:5002")
+  proxy("http://localhost:5002")
 );
 
-app.use("/api/locations", applyRateLimiter, proxy("http://auth:5001", {
+app.use("/api/locations", applyRateLimiter, proxy("http://localhost:5001", {
+  proxyReqBodyDecorator: function(bodyContent, srcReq) {
+    // Forward the body as JSON
+    return bodyContent;
+  },
+  proxyReqOptDecorator: function(proxyReqOpts, srcReq) {
+    proxyReqOpts.headers['Content-Type'] = 'application/json';
+    return proxyReqOpts;
+  },
   userResDecorator: function(proxyRes, proxyResData, req, res) {
     console.log(`[API-GATEWAY] Response from Auth service for ${req.method} ${req.originalUrl}: Status ${proxyRes.statusCode}`);
     return proxyResData;

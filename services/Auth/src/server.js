@@ -32,7 +32,8 @@ const allowedOrigins = [
     process.env.CORS_ORIGIN || 'http://localhost:5173',
     'http://localhost:3000',
     'http://localhost:5000',
-    'http://localhost:8080'
+    'http://localhost:8080',
+    'http://4.236.138.4',
 ];
 app.use(cors({
     origin: function(origin, callback) {

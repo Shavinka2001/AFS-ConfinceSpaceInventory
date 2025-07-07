@@ -37,22 +37,26 @@ const LocationModal = ({ isOpen, onClose, onSubmit, location, isEdit, mapRef }) 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate form
-    if (!formData.name.trim()) {
+    // Debug: Log formData before submission
+    console.log("Submitting location:", formData);
+
+    // Enhanced validation with specific error messages
+    if (!formData.name || !formData.name.trim()) {
       toast.error('Location name is required');
       return;
     }
-    
-    if (!formData.latitude || !formData.longitude) {
-      toast.error('Please select a location on the map');
-      return;
-    }
-
-    if (!formData.address) {
+    if (!formData.address || !formData.address.trim()) {
       toast.error('Address is required');
       return;
     }
-    
+    if (formData.latitude === null || formData.latitude === '' || isNaN(Number(formData.latitude))) {
+      toast.error('Latitude is required and must be a valid number');
+      return;
+    }
+    if (formData.longitude === null || formData.longitude === '' || isNaN(Number(formData.longitude))) {
+      toast.error('Longitude is required and must be a valid number');
+      return;
+    }
     setLoading(true);
     try {
       await onSubmit(formData);
