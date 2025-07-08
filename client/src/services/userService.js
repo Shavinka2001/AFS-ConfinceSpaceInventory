@@ -6,7 +6,8 @@ const emitSessionTimeout = () => {
     window.dispatchEvent(new CustomEvent(SESSION_TIMEOUT_EVENT));
 };
 
-const API_URL = ['http://localhost:5000/api/auth','http://4.236.138.4'];
+// const API_URL = ['http://localhost:5000/api/auth','http://4.236.138.4'];
+const API_URL = 'http://localhost:5000/api/auth' || 'http://4.236.138.4';
 
 // Token management - Moving these functions up so they're defined before being used
 const getAccessToken = () => {
